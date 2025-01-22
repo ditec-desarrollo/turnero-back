@@ -26,16 +26,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/usuarios', usuariosRoutes)
 app.use("/turnos", turnosRoutes);
 
-// const options = {
-//     key: fs.readFileSync('./scfg0cbqs'),
-//     cert: fs.readFileSync('./scfg0cbqs'),
-//     //ca: fs.readFileSync('/opt/psa/var/certificates/scfqdiDyQ') // si tienes un archivo CA bundle
-//   };
+const options = {
+    key: fs.readFileSync('/opt/psa/var/certificates/scfx0vp99'),
+    cert: fs.readFileSync('/opt/psa/var/certificates/scfx0vp99'),
+    //ca: fs.readFileSync('/opt/psa/var/certificates/scfqdiDyQ') // si tienes un archivo CA bundle
+  };
   
-//   https.createServer(options, app).listen(5000, () => {
-//     console.log(`server listening on port 5000`);
-//   });
-
-  app.listen(30501, () => {
-    console.log(`server listening on port 3050`);
+  https.createServer(options, app).listen(7772, () => {
+    console.log(`server listening on port 7772`);
   });
+
+  // app.listen(3050, () => {
+  //   console.log(`server listening on port 3050`);
+  // });

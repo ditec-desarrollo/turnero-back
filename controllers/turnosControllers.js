@@ -3,17 +3,14 @@ const nodemailer = require('nodemailer');
 const { formatFechaEmail } = require("../utils/helpers");
 
 const obtenerTramites = async (req, res) => {
-  const connection = await conectarDBTurnosPrueba();
-    try {
+  let connection;
+  try {
+      connection = await conectarDBTurnosPrueba();
         const reparticion_id = req.query.reparticion_id;
-      console.log("Conectado a MySQL");
   
       const [tramites, fields] = await connection.execute(
         " SELECT tramite.idtramite, tramite.nombre_tramite, tramite.reparticion_id, tramite.observaciones, tramite.adicionalrequerido FROM tramite WHERE reparticion_id = ? ",[reparticion_id]
       );
-      
-      await connection.end();
-      console.log("Conexión cerrada");
 
       res.status(200).json({ tramites });
 
@@ -29,14 +26,11 @@ const obtenerTramites = async (req, res) => {
   };
 
   const obtenerProcedimientos = async (req, res) => {
-    const connection = await conectarDBTurnosPrueba();
+    let connection;
     try {
-        console.log('Conectado a MySQL');
+       connection = await conectarDBTurnosPrueba();
 
         const [tramites, fields] = await connection.execute(process.env.QUERY_GET_PROCEDIMIENTOS_CEMA);
-
-        await connection.end();
-        console.log('Conexión cerrada');
 
         res.status(200).json({ tramites });
 
@@ -53,14 +47,11 @@ const obtenerTramites = async (req, res) => {
 };
 
 const obtenerFunciones = async (req, res) => {
-  const connection = await conectarDBTurnosPrueba();
-    try {
-        console.log('Conectado a MySQL');
+  let connection;
+  try {
+       connection = await conectarDBTurnosPrueba();
 
         const [funciones, fields] = await connection.execute(process.env.QUERY_GET_FUNCIONES_CEMA);
-
-        await connection.end();
-        console.log('Conexión cerrada');
 
         res.status(200).json({ funciones });
 
@@ -78,20 +69,17 @@ const obtenerFunciones = async (req, res) => {
 
 
 const existeTurno = async (req, res) => {
-  const connection = await conectarDBTurnosPrueba();
-    try {
+  let connection;
+  try {
+      connection = await conectarDBTurnosPrueba();
       const cuil = req.query.cuil;
       const id_tramite = req.query.id_tramite;
-      // console.log(cuil);
-      console.log("Conectado a MySQL");
   
       let sqlQuery = `CALL api_existeturno(?,?)`;
       const [results, fields] = await connection.execute(sqlQuery, [id_tramite, cuil]);
-      console.log(results[0]);
-      await connection.end();
+
       res.status(200).json(results[0]);
   
-      console.log("Conexión cerrada");
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Error de servidor" });
@@ -104,19 +92,16 @@ const existeTurno = async (req, res) => {
   };
 
   const obtenerTurnosDisponiblesPorDia = async (req, res) => {
-    const connection = await conectarDBTurnosPrueba();
+    let connection;
     try {
-         const id_tramite = req.query.id_tramite;
-  
-      console.log("Conectado a MySQL");
+      connection = await conectarDBTurnosPrueba();
+      const id_tramite = req.query.id_tramite;
   
       let sqlQuery = `CALL api_obtenerturnospordia(?)`;
       const [results, fields] = await connection.execute(sqlQuery,[id_tramite]);
-  
-      await connection.end();
+
       res.status(200).json(results[0]);
   
-      console.log("Conexión cerrada");
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Error de servidor" });
@@ -129,21 +114,18 @@ const existeTurno = async (req, res) => {
   };
   
   const obtenerTurnosDisponiblesPorHora = async (req, res) => {
-    const connection = await conectarDBTurnosPrueba();
+    let connection;
     try {
+      connection = await conectarDBTurnosPrueba();
       const id_tramite = req.query.id_tramite;
       const fecha_solicitada = req.query.fecha_solicitada;
-      console.log(fecha_solicitada);
-  
-      console.log("Conectado a MySQL");
   
       let sqlQuery = `CALL api_obtenerturnosporhora(?, ?)`;
   
       const [results, fields] = await connection.execute(sqlQuery, [id_tramite, fecha_solicitada]);
-      await connection.end();
+
       res.status(200).json(results[0]);
-  
-      console.log("Conexión cerrada");
+
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Error de servidor" });
@@ -189,14 +171,11 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
 
 
   const confirmarTurno = async (req, res) => {
-    const connection = await conectarDBTurnosPrueba();
+    let connection;
     try {
+       connection = await conectarDBTurnosPrueba();
 
       const { cuil, id_tramite, apellido, nombre, fecha_solicitada, hora_solicitada, email, nombre_tramite,adicional} = req.body;
-      console.log(req.body);
-
-      // console.log(req.query);
-      console.log("Conectado a MySQL");
   
       let sqlQuery = `SELECT api_confirmarturno(?, ?, ?, ?, ?, ?,?)`;
       const [results, fields] = await connection.execute(sqlQuery, [id_tramite, cuil, apellido, nombre, fecha_solicitada, hora_solicitada,adicional]);
@@ -204,8 +183,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
       if(Object.values(results[0])[0] == 1){
         enviarEmail(nombre_tramite,fecha_solicitada,hora_solicitada,email,res);
       }
-      await connection.end();
-      console.log("Conexión cerrada");
+
       res.status(200).json(results[0]);
     } catch (error) {
       console.error("Error:", error);
@@ -219,21 +197,66 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
   };
 
   const anularTurno = async (req, res) => {
-    const connection = await conectarDBTurnosPrueba();
+    let connection;
     try {
+      connection = await conectarDBTurnosPrueba();
       const cuil = req.query.cuil;
       const id_tramite = req.query.id_tramite;
   
-      // console.log(req.query);
-      console.log("Conectado a MySQL");
-  
       let sqlQuery = `SELECT api_anularturno(?, ?)`;
       const [results, fields] = await connection.execute(sqlQuery, [id_tramite, cuil]);
-      console.log(results);
-      await connection.end();
+
       res.status(200).json(results[0]);
+
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Error de servidor" });
+    }finally {
+      // Cerrar la conexión a la base de datos
+      if (connection) {
+        await connection.end();
+      }
+    }
+  };
+
+  const confirmarTurnoFichaMedica = async (req, res) => {
+    let connection;
+    try {
+       connection = await conectarDBTurnosPrueba();
+
+      const { cuil, id_tramite, apellido, nombre, fecha_solicitada, hora_solicitada, email, nombre_tramite,adicional, cantidadDePersonas} = req.body;
   
-      console.log("Conexión cerrada");
+      let sqlQuery = `SELECT api_confirmarturnos_fichamedica(?, ?, ?, ?, ?, ?,?,?)`;
+      const [results, fields] = await connection.execute(sqlQuery, [id_tramite, cuil, apellido, nombre, fecha_solicitada, hora_solicitada,adicional,cantidadDePersonas]);
+  
+      if(Object.values(results[0])[0] == 1){
+        enviarEmail(nombre_tramite,fecha_solicitada,hora_solicitada,email,res);
+      }
+
+      res.status(200).json(results[0]);
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Error de servidor" });
+    }finally {
+      // Cerrar la conexión a la base de datos
+      if (connection) {
+        await connection.end();
+      }
+    }
+  };
+
+  const anularTurnoFichaMedica = async (req, res) => {
+    let connection;
+    try {
+      connection = await conectarDBTurnosPrueba();
+      const cuil = req.query.cuil;
+      const id_tramite = req.query.id_tramite;
+  
+      let sqlQuery = `SELECT api_anularturno_fichamedica(?, ?)`;
+      const [results, fields] = await connection.execute(sqlQuery, [id_tramite, cuil]);
+
+      res.status(200).json(results[0]);
+
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Error de servidor" });
@@ -246,4 +269,4 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
   };
   
 
-  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno}
+  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica}

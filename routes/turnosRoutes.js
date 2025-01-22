@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const auth = require("../middlewares/auth");
 const verifyRole = require("../middlewares/verifyRole");
-const { obtenerTramites, obtenerProcedimientos, obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno } = require("../controllers/turnosControllers");
+const { obtenerTramites, obtenerProcedimientos, obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica } = require("../controllers/turnosControllers");
 const router = Router();
 
 router.get("/listarTramites",auth, obtenerTramites);
@@ -12,5 +12,8 @@ router.post("/confirmarTurno",auth, confirmarTurno)
 router.get("/anularTurno",auth, anularTurno)
 router.get("/buscarTurnosDisponiblesPorDia",auth, obtenerTurnosDisponiblesPorDia)
 router.get("/buscarTurnosDisponiblesPorHora",auth, obtenerTurnosDisponiblesPorHora)
+
+router.post("/confirmarTurnoFichaMedica",auth, confirmarTurnoFichaMedica)
+router.get("/anularTurnoFichaMedica",auth, anularTurnoFichaMedica)
 
 module.exports = router;
