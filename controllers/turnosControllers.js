@@ -11,7 +11,7 @@ const obtenerTramites = async (req, res) => {
         const reparticion_id = req.query.reparticion_id;
   
       const [tramites, fields] = await connection.execute(
-        " SELECT tramite.idtramite, tramite.nombre_tramite, tramite.reparticion_id, tramite.observaciones, tramite.adicionalrequerido FROM tramite WHERE reparticion_id = ? ",[reparticion_id]
+        " SELECT tramite.idtramite, tramite.nombre_tramite, tramite.reparticion_id, tramite.observaciones, tramite.adicionalrequerido FROM tramite WHERE reparticion_id = ? AND habilitado = 1 ",[reparticion_id]
       );
 
       res.status(200).json({ tramites });
