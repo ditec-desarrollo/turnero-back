@@ -195,7 +195,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
   
           if (jwtToken) {
             const resp = await fetch(
-              `https://preprod.smt.ciudadana.ar/api/jobs/notificationssent/send`,
+              process.env.URL_NOTIFICACIONES_MACRO,
               {
                 method: "POST",
                 headers: {
@@ -205,7 +205,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
                   // host: "preprod.smt.ciudadana.ar",
                 },
                 body: JSON.stringify({
-                  notificationId: "NOTI-CIUDADANA-GENERIC",
+                  notificationId: "NOTI-CIUDADANA-SMT",
                   channels: ["EMAIL", "PUSH"],
                   addressType: "CUIL", //CUIL, DOC, MAIL, PHONE
                   addressTos: [
@@ -266,7 +266,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
 
         if (jwtToken) {
           const resp = await fetch(
-            `https://preprod.smt.ciudadana.ar/api/jobs/notificationssent/send`,
+            process.env.URL_NOTIFICACIONES_MACRO,
             {
               method: "POST",
               headers: {
@@ -276,7 +276,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
                 // host: "preprod.smt.ciudadana.ar",
               },
               body: JSON.stringify({
-                notificationId: "NOTI-CIUDADANA-GENERIC",
+                notificationId: "NOTI-CIUDADANA-SMT",
                 channels: ["EMAIL", "PUSH"],
                 addressType: "CUIL", //CUIL, DOC, MAIL, PHONE
                 addressTos: [
@@ -338,7 +338,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
 
         if (jwtToken) {
           const resp = await fetch(
-            `https://preprod.smt.ciudadana.ar/api/jobs/notificationssent/send`,
+            process.env.URL_NOTIFICACIONES_MACRO,
             {
               method: "POST",
               headers: {
@@ -348,7 +348,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
                 // host: "preprod.smt.ciudadana.ar",
               },
               body: JSON.stringify({
-                notificationId: "NOTI-CIUDADANA-GENERIC",
+                notificationId: "NOTI-CIUDADANA-SMT",
                 channels: ["EMAIL", "PUSH"],
                 addressType: "CUIL", //CUIL, DOC, MAIL, PHONE
                 addressTos: [
@@ -406,7 +406,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
 
         if (jwtToken) {
           const resp = await fetch(
-            `https://preprod.smt.ciudadana.ar/api/jobs/notificationssent/send`,
+            process.env.URL_NOTIFICACIONES_MACRO,
             {
               method: "POST",
               headers: {
@@ -416,7 +416,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
                 // host: "preprod.smt.ciudadana.ar",
               },
               body: JSON.stringify({
-                notificationId: "NOTI-CIUDADANA-GENERIC",
+                notificationId: "NOTI-CIUDADANA-SMT",
                 channels: ["EMAIL", "PUSH"],
                 addressType: "CUIL", //CUIL, DOC, MAIL, PHONE
                 addressTos: [
