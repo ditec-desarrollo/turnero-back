@@ -1,4 +1,4 @@
-const { conectarDBTurnosPrueba } = require("../config/dbTurnosMYSQL");
+const { conectarDBTurnosPrueba, conectarDBTurnos } = require("../config/dbTurnosMYSQL");
 const nodemailer = require('nodemailer');
 const { formatFechaEmail } = require("../utils/helpers");
 const { authMacroApi } = require("../utils/loginApiMacro");
@@ -7,25 +7,35 @@ const { formatDate, formatDateOrder } = require("../utils/formatFecha");
 const obtenerTramites = async (req, res) => {
   let connection;
   try {
-      connection = await conectarDBTurnosPrueba();
-        const reparticion_id = req.query.reparticion_id;
-  
-      const [tramites, fields] = await connection.execute(
-        " SELECT tramite.idtramite, tramite.nombre_tramite, tramite.reparticion_id, tramite.observaciones, tramite.adicionalrequerido FROM tramite WHERE reparticion_id = ? AND habilitado = 1 ",[reparticion_id]
-      );
+    connection = await conectarDBTurnosPrueba();
+    const reparticion_id = req.query.reparticion_id;
 
-      res.status(200).json({ tramites });
+    let query = `
+      SELECT idtramite, nombre_tramite, reparticion_id, observaciones, adicionalrequerido
+      FROM tramite
+      WHERE habilitado = 1
+    `;
+    let params = [];
 
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Error de servidor" });
-    }finally {
-      // Cerrar la conexión a la base de datos
-      if (connection) {
-        await connection.end();
-      }
+    if (reparticion_id!=0) {
+      query += " AND reparticion_id = ?";
+      params.push(reparticion_id);
     }
-  };
+
+    const [tramites] = await connection.execute(query, params);
+
+    res.status(200).json({ tramites });
+
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error de servidor" });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
+
 
   const obtenerProcedimientos = async (req, res) => {
     let connection;
@@ -450,6 +460,74 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
       }
     }
   };
-  
 
-  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica}
+
+  const obtenerPerfilPorCuil = async (req, res) => { 
+    const { cuil } = req.params;
+    const connection = await conectarDBTurnos();
+
+    try {
+        // Obtener el usuario_id y perfil_id correspondiente al cuil
+        const [usuarios] = await connection.execute(
+            'SELECT id, perfil_id,reparticion_id FROM usuarios WHERE cuil = ?',
+            [cuil]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(200).json({ message: 'Usuario no encontrado' ,ok:false});
+        }
+
+        const usuario = usuarios[0]; // Obtén el usuario con usuario_id y perfil_id
+
+        // Obtener la fila completa del perfil correspondiente al perfil_id
+        const [perfiles] = await connection.execute(
+            'SELECT * FROM perfiles_menues WHERE perfil_id = ?',
+            [usuario.perfil_id]
+        );
+
+        if (perfiles.length === 0) {
+            return res.status(200).json({ message: 'Perfil no encontrado' ,ok:false});
+        }
+
+        // Agregar usuario_id a cada perfil en el array
+        const perfilesConUsuario = perfiles.map(perfil => ({
+            ...perfil,  
+            usuario_id: usuario.id,
+           reparticion_id:usuario.reparticion_id
+        }));
+
+        res.status(200).json(  {permisos:perfilesConUsuario,ok:true});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message || 'Algo salió mal :(' });
+    } finally {
+        await connection.end();
+    }
+};
+
+
+const obtenerTipoTramite = async (req, res) => {
+  let connection;
+  try {
+      connection = await conectarDBTurnos();
+        const reparticion_id = req.params.reparticion_id;
+  
+      const [tipotramite, fields] = await connection.execute(
+        " SELECT * FROM tipotramite WHERE reparticion_id = ? AND habilita = 1 ",[reparticion_id]
+      );
+
+      res.status(200).json({ tipotramite });
+
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Error de servidor" });
+    }finally {
+      // Cerrar la conexión a la base de datos
+      if (connection) {
+        await connection.end();
+      }
+    }
+  };
+
+
+  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica,obtenerPerfilPorCuil,obtenerTipoTramite}
