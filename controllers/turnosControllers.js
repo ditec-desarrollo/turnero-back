@@ -461,7 +461,7 @@ const enviarEmail = (nombre_tramite,fecha,hora, email, res) => {
     }
   };
 
-
+ 
   const obtenerPerfilPorCuil = async (req, res) => { 
     const { cuil } = req.params;
     const connection = await conectarDBTurnos();
@@ -529,5 +529,55 @@ const obtenerTipoTramite = async (req, res) => {
     }
   };
 
+  const obtenerTurnosAsignados= async (req, res) => {
+    let connection;
+    try {
+        connection = await conectarDBTurnos();
+          const id = req.query.tipoTramite;
+          const fecha= req.query.fecha
+    
+        const [turnosAsignados , fields] = await connection.execute(
+          "SELECT idturno,hora_turno,dni,apellido,nombre,datoadicional FROM turno WHERE idtramite= ? AND dia_turno= ? AND not(fecha_solicitud IS NULL) ORDER BY dia_turno ",[id,fecha]
+        );
+  
+        res.status(200).json({turnosAsignados });
+  
+      } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Error de servidor" });
+      }finally {
+        // Cerrar la conexión a la base de datos
+        if (connection) {
+          await connection.end();
+        }
+      }
+    };
 
-  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica,obtenerPerfilPorCuil,obtenerTipoTramite}
+
+    const liberarTurno= async (req, res) => {
+      let connection;
+      try {
+          connection = await conectarDBTurnos();
+            const usuario = req.query.usuario;
+            const turno= req.query.idturno
+      
+          const [turnolib , fields] = await connection.execute(
+            "UPDATE turno SET idestado=0,dni=NULL,apellido=NULL,nombre=NULL,datoadicional=NULL,fecha_solicitud=NULL,idusuario= ? WHERE idturno= ? ",[usuario,turno]
+          );
+    
+          res.status(200).json({message:"Turno Liberado" });
+    
+        } catch (error) {
+          console.error("Error:", error);
+          res.status(500).json({ error: "Error de servidor" });
+        }finally {
+          // Cerrar la conexión a la base de datos
+          if (connection) {
+            await connection.end();
+          }
+        }
+      };
+
+
+
+  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica,obtenerPerfilPorCuil,obtenerTipoTramite,obtenerTurnosAsignados,liberarTurno}
