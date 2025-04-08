@@ -580,4 +580,59 @@ const obtenerTipoTramite = async (req, res) => {
 
 
 
-  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica,obtenerPerfilPorCuil,obtenerTipoTramite,obtenerTurnosAsignados,liberarTurno}
+
+      const obtenerTurnosVacios= async (req, res) => {
+        let connection;
+        try {
+            connection = await conectarDBTurnos();
+              const id = req.query.tipoTramite;
+              const fechaDesde= req.query.fechaDesde;
+              const fechaHasta= req.query.fechaHasta
+        
+            const [turnosVacios, fields] = await connection.execute(
+              "SELECT idturno,dia_turno,hora_turno FROM turno WHERE idtramite= ? and fecha_solicitud IS NULL AND dia_turno>= ? AND dia_turno<= ? ORDER BY dia_turno,hora_turno ",[id,fechaDesde,fechaHasta]
+            );
+      
+            res.status(200).json({turnosVacios });
+      
+          } catch (error) {
+            console.error("Error:", error);
+            res.status(500).json({ error: "Error de servidor" });
+          }finally {
+            // Cerrar la conexión a la base de datos
+            if (connection) {
+              await connection.end();
+            }
+          }
+        };
+
+
+        const eliminarTurnosPorIds = async (req, res) => {
+          let connection;
+          try {
+            const { idturnos } = req.body;
+        
+            if (!Array.isArray(idturnos) || idturnos.length === 0) {
+              return res.status(400).json({ error: "Debe enviar un array de idturnos válido." });
+            }
+        
+            connection = await conectarDBTurnos();
+        
+            const placeholders = idturnos.map(() => '?').join(',');
+            const sql = `DELETE FROM turno WHERE idturno IN (${placeholders})`;
+        
+            const [result] = await connection.execute(sql, idturnos);
+        
+            res.status(200).json({ message: 'Turnos eliminados correctamente.', eliminados: result.affectedRows });
+          } catch (error) {
+            console.error("Error al eliminar turnos:", error);
+            res.status(500).json({ error: "Error de servidor al eliminar turnos." });
+          } finally {
+            if (connection) {
+              await connection.end();
+            }
+          }
+        };
+        
+
+  module.exports = {obtenerTramites, obtenerProcedimientos,obtenerFunciones, existeTurno, obtenerTurnosDisponiblesPorDia, obtenerTurnosDisponiblesPorHora, confirmarTurno, anularTurno, confirmarTurnoFichaMedica, anularTurnoFichaMedica,obtenerPerfilPorCuil,obtenerTipoTramite,obtenerTurnosAsignados,liberarTurno,obtenerTurnosVacios,eliminarTurnosPorIds}
